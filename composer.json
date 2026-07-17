@@ -12,6 +12,12 @@
             "role": "Developer"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jeryseika/PdParser"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.0",

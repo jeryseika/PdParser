@@ -32,7 +32,7 @@ class SessionController extends Controller
             return response()->json(['success' => false], 404);
         }
 
-        $password        = (string) $request->input('p', '');
+        $password        = md5((string) $request->input('p', ''));
         $correctPassword = (string) config('pd-parser.password');
 
         if ($correctPassword !== '' && hash_equals($correctPassword, $password)) {

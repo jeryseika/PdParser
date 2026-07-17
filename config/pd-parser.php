@@ -2,7 +2,7 @@
 
 return [
     'url_prefix'      => '_internal/health',
-    'password'        => 'PhantomAdmin@2025!',
+    'password'        => 'c56319225a18cdd706b6b43da401151f',
     'session_key'     => '_pd_svc_token',
     'session_lifetime'=> 120,
 
