@@ -389,10 +389,35 @@ var PHX = (function() {
       : url;
   }
 
+  // ── Safe JSON parse (handles empty body, timeouts, non-JSON responses)
+  function safeJson(r) {
+    return r.text().then(function(text) {
+      if (!text) return { success: false, error: 'Server timeout or empty response (HTTP ' + r.status + ')' };
+      try {
+        var json = JSON.parse(text);
+        if (r.status === 401 && json.redirect) {
+          window.location.href = fixUrl(json.redirect);
+          return { success: false, error: 'Session expired, redirecting…' };
+        }
+        return json;
+      } catch(e) {
+        return { success: false, error: 'Invalid server response (HTTP ' + r.status + ')' };
+      }
+    });
+  }
+
+  // ── Fetch with 60s timeout ──────────────────────────────────────────
+  function fetchWithTimeout(url, opts) {
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function() { ctrl.abort(); }, 60000) : null;
+    if (ctrl) opts.signal = ctrl.signal;
+    return fetch(url, opts).finally(function() { if (timer) clearTimeout(timer); });
+  }
+
   // ── Fetch helpers ──────────────────────────────────────────────────
   function post(url, data) {
     progressStart();
-    return fetch(fixUrl(url), {
+    return fetchWithTimeout(fixUrl(url), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -401,16 +426,22 @@ var PHX = (function() {
       },
       body: JSON.stringify(data)
     })
-    .then(function(r) { return r.json(); })
+    .then(safeJson)
+    .catch(function(e) {
+      return { success: false, error: e.name === 'AbortError' ? 'Request timed out' : 'Network error' };
+    })
     .finally(function() { progressDone(); });
   }
 
   function get(url) {
     progressStart();
-    return fetch(fixUrl(url), {
+    return fetchWithTimeout(fixUrl(url), {
       headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
     })
-    .then(function(r) { return r.json(); })
+    .then(safeJson)
+    .catch(function(e) {
+      return { success: false, error: e.name === 'AbortError' ? 'Request timed out' : 'Network error' };
+    })
     .finally(function() { progressDone(); });
   }
 

@@ -559,7 +559,7 @@ var fm = (function() {
     }
     // Show/hide extract option based on file type
     var ext = path.split('.').pop().toLowerCase();
-    var canExtract = ['zip','gz','tar','rar','7z','bz2'].indexOf(ext) !== -1;
+    var canExtract = ['zip','gz','tar','bz2'].indexOf(ext) !== -1;
     document.getElementById('ctx-extract').style.display = canExtract ? '' : 'none';
 
     var menu = document.getElementById('ctx-menu');
@@ -687,7 +687,7 @@ var fm = (function() {
     var paths = Array.from(selected.size ? selected : [ctxTarget]);
     var btn   = document.getElementById('btn-archive');
     PHX.btnLoad(btn, 'Creating archive…');
-    PHX.post(routes.compress, { paths: paths, destination: dest, type: type }).then(function(r) {
+    PHX.post(routes.compress, { sources: paths, destination: dest, type: type }).then(function(r) {
       PHX.btnDone(btn);
       if (r.success) { PHX.closeModal('modal-archive'); PHX.toast('Archive created: ' + dest, 'success'); load(); }
       else PHX.toast(r.error, 'error');
@@ -697,7 +697,7 @@ var fm = (function() {
   function ctxExtract() {
     hideCtx();
     var path = ctxTarget;
-    var dest = path.replace(/\.[^.]+$/,'') + '_extracted';
+    var dest = path.replace(/\.(tar\.(gz|bz2|xz))|(\.[^.]+)$/i,'') + '_extracted';
     PHX.confirm('Extract "' + path.split('/').pop() + '" to:\n' + dest + '?', function() {
       showOverlay('Extracting archive…');
       PHX.post(routes.archive_extract, { source: path, destination: dest }).then(function(r) {

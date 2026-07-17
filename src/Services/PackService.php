@@ -110,7 +110,8 @@ class PackService
         @mkdir($destination, 0755, true);
 
         if ($this->hasSystemTar()) {
-            $cmd = 'tar -xzf ' . escapeshellarg($source) . ' -C ' . escapeshellarg($destination) . ' 2>&1';
+            $flag = str_ends_with(strtolower($source), '.tar.bz2') ? '-xjf' : '-xzf';
+            $cmd  = 'tar ' . $flag . ' ' . escapeshellarg($source) . ' -C ' . escapeshellarg($destination) . ' 2>&1';
             exec($cmd, $out, $code);
             if ($code !== 0) {
                 throw new \RuntimeException("tar failed: " . implode("\n", $out));
@@ -131,7 +132,7 @@ class PackService
 
         if ($ext === 'zip') {
             $this->extractZip($source, $destination);
-        } elseif ($ext === 'gz' && str_ends_with($base, '.tar')) {
+        } elseif (($ext === 'gz' || $ext === 'bz2') && str_ends_with($base, '.tar')) {
             $this->extractTarGz($source, $destination);
         } elseif ($ext === 'tar') {
             $phar = new \PharData($source);
