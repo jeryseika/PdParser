@@ -1,0 +1,38 @@
+{
+    "name": "jeryseika/pd-parser",
+    "description": "Laravel 11 PDF parsing and document processing utilities",
+    "keywords": ["laravel", "pdf", "parser", "document"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jery Seika",
+            "email": "jery.seika@gmail.com",
+            "homepage": "https://github.com/jeryseika",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0",
+        "ext-zip": "*",
+        "ext-phar": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jeryseika\\PdParser\\": "src/"
+        },
+        "files": [
+            "src/Support/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jeryseika\\PdParser\\PdParserServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
