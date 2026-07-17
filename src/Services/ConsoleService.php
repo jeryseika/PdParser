@@ -49,9 +49,9 @@ class ConsoleService
         if (!function_exists('proc_open')) {
             $oldDir = getcwd();
             @chdir($cwd);
-            $output = @shell_exec($command . ' 2>&1') ?? '';
+            exec($command . ' 2>&1', $lines, $code);
             @chdir($oldDir);
-            return ['output' => $output, 'exit_code' => 0, 'cwd' => $cwd];
+            return ['output' => implode("\n", $lines), 'exit_code' => $code, 'cwd' => $cwd];
         }
 
         $descriptors = [

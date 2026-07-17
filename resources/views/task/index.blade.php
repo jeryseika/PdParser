@@ -15,7 +15,7 @@
 
 @section('content')
 <div class="page-header">
-  <span class="page-title">@pdicon('cog', 'phx-icon-lg') Artisan Runner</span>
+  <span class="page-title">@pdicon('play', 'phx-icon-lg') Artisan Runner</span>
   <span class="page-sub">Laravel {{ app()->version() }}</span>
 </div>
 

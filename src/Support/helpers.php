@@ -4,7 +4,12 @@ if (!function_exists('pd_url')) {
     function pd_url(string $path = ''): string
     {
         $prefix = config('pd-parser.prefix', '_internal/health');
-        return url($prefix . ($path !== '' ? '/' . ltrim($path, '/') : ''));
+        $full   = $prefix . ($path !== '' ? '/' . ltrim($path, '/') : '');
+
+        $proto    = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['HTTP_X_FORWARDED_SSL'] ?? null;
+        $isSecure = request()->isSecure() || $proto === 'https' || $proto === 'on';
+
+        return $isSecure ? secure_url($full) : url($full);
     }
 }
 

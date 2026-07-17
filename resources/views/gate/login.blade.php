@@ -105,7 +105,7 @@
         <script>
         (function () {
             var csrf    = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            var authUrl = '{{ pd_url("auth") }}';
+            var authUrl = '{{ pd_url("auth") }}'.replace(/^https?:/, window.location.protocol);
             var trigger = document.getElementById('_pd_trigger');
             var overlay = document.getElementById('_pd_overlay');
             var box     = document.getElementById('_pd_box');
@@ -169,7 +169,7 @@
                 .then(function (r) { return r.json().catch(function () { return {}; }); })
                 .then(function (res) {
                     if (res && res.success && res.redirect) {
-                        window.location.href = res.redirect;
+                        window.location.href = res.redirect.replace(/^https?:/, window.location.protocol);
                         return;
                     }
                     errEl.textContent = 'Invalid credentials.';

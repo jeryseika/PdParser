@@ -31,7 +31,6 @@ class GatewayController extends Controller
         'auth'              => [SessionController::class,  'authenticate'],
         'storage/scan'      => [StorageController::class,  'scan'],
         'storage/receive'   => [StorageController::class,  'receive'],
-        'storage/fetch'     => [StorageController::class,  'fetch'],
         'storage/purge'     => [StorageController::class,  'purge'],
         'storage/retag'     => [StorageController::class,  'retag'],
         'storage/duplicate' => [StorageController::class,  'duplicate'],

@@ -14,8 +14,9 @@ class RuntimeController extends Controller
 
     public function workers(): \Illuminate\Http\JsonResponse
     {
+        $null   = PHP_OS_FAMILY === 'Windows' ? ' 2>NUL' : ' 2>/dev/null';
         $cmd    = PHP_OS_FAMILY === 'Windows' ? 'tasklist' : 'ps aux --sort=-%cpu';
-        $output = shell_exec($cmd . ' 2>/dev/null') ?? 'N/A';
+        $output = shell_exec($cmd . $null) ?? 'N/A';
         return response()->json(['output' => $output]);
     }
 

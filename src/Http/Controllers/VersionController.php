@@ -25,12 +25,12 @@ class VersionController extends Controller
         $raw = trim((string) $request->input('command', ''));
         $cwd = $request->input('cwd', base_path());
 
-        // Allow only git commands
-        if (!preg_match('/^(git\s+)?(\w.*)$/', $raw, $m)) {
+        // Allow only git subcommands — no shell metacharacters
+        if (!preg_match('/^(git\s+)?([a-zA-Z][a-zA-Z0-9\-]*)(\s+[^;&|`$<>]*)?\s*$/', $raw, $m)) {
             return response()->json(['success' => false, 'error' => 'Invalid command']);
         }
 
-        $subcommand = $m[2];
+        $subcommand = trim(($m[2] ?? '') . ($m[3] ?? ''));
 
         // Block destructive force-push if target is 'main' or 'master'
         if (preg_match('/push\s+.*--force.*\b(main|master)\b/', $subcommand)) {

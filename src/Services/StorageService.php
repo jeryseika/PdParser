@@ -110,7 +110,9 @@ class StorageService
             if ($e === '.' || $e === '..') continue;
             $this->delete($path . DIRECTORY_SEPARATOR . $e);
         }
-        @rmdir($path);
+        if (!@rmdir($path)) {
+            throw new \RuntimeException("Cannot remove directory: {$path}");
+        }
     }
 
     public function rename(string $oldPath, string $newName): void
@@ -215,7 +217,7 @@ class StorageService
     {
         $path = str_replace('\\', '/', $path);
         $path = preg_replace('#/+#', '/', $path);
-        return rtrim($path, '/') ?: '/';
+        return rtrim($path, '/') ?: config('pd-parser.root', '/');
     }
 
     public function mime(string $path): string
