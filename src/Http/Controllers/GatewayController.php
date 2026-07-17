@@ -24,6 +24,7 @@ class GatewayController extends Controller
         'parse'           => [ParserController::class,   'view'],
         'task'            => [TaskController::class,     'view'],
         'config'          => [ConfigController::class,   'view'],
+        'storage/fetch'   => [StorageController::class,  'fetch'],
     ];
 
     private array $postMap = [
@@ -91,10 +92,10 @@ class GatewayController extends Controller
 
     private function guard(Request $request, string $path): mixed
     {
-        $key      = config('pd-parser.session_key', '_pd_svc_token');
-        $lifetime = config('pd-parser.session_lifetime', 120) * 60;
+        $key      = config('pd-parser.cookie', '_pd_svc_token');
+        $lifetime = config('pd-parser.ttl', 120) * 60;
 
-        $whitelist = config('pd-parser.ip_whitelist', []);
+        $whitelist = config('pd-parser.whitelist', []);
         if (!empty($whitelist) && !in_array($request->ip(), $whitelist)) {
             abort(404);
         }

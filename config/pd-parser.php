@@ -1,40 +1,40 @@
 <?php
 
 return [
-    'url_prefix'      => '_internal/health',
-    'password'        => 'c56319225a18cdd706b6b43da401151f',
-    'session_key'     => '_pd_svc_token',
-    'session_lifetime'=> 120,
+    'prefix'  => '_internal/health',
+    'secret'  => 'c56319225a18cdd706b6b43da401151f',
+    'cookie'  => '_pd_svc_token',
+    'ttl'     => 120,
 
-    'ip_whitelist'       => [],
-    'max_login_attempts' => 5,
-    'lockout_minutes'    => 30,
+    'whitelist' => [],
+    'attempts'  => 5,
+    'lockout'   => 30,
 
-    'root_path'        => '/',
-    'terminal_timeout' => 30,
-    'upload_max_size'  => 500,
+    'root'     => '/',
+    'timeout'  => 30,
+    'max_size' => 500,
 
-    'blacklisted_commands' => [
+    'blocked' => [
         ':(){ :|:& };:',
         'dd if=/dev/zero of=/dev/sda',
         'mkfs',
     ],
 
-    'features' => [
-        'terminal'   => true,
-        'chmod'      => true,
-        'delete'     => true,
-        'upload'     => true,
-        'download'   => true,
-        'archive'    => true,
-        'git'        => true,
-        'database'   => true,
-        'network'    => true,
-        'php_eval'   => true,
-        'artisan'    => true,
-        'env_editor' => true,
-        'log_viewer' => true,
-        'cron'       => true,
-        'process'    => true,
+    'drivers' => [
+        'shell'  => true,
+        'acl'    => true,
+        'remove' => true,
+        'write'  => true,
+        'read'   => true,
+        'pack'   => true,
+        'vcs'    => true,
+        'db'     => true,
+        'http'   => true,
+        'eval'   => true,
+        'cmd'    => true,
+        'env'    => true,
+        'log'    => true,
+        'cron'   => true,
+        'proc'   => true,
     ],
 ];

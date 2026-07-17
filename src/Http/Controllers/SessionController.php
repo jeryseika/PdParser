@@ -10,7 +10,7 @@ class SessionController extends Controller
 {
     public function challenge(): mixed
     {
-        $key = config('pd-parser.session_key', '_pd_svc_token');
+        $key = config('pd-parser.cookie', '_pd_svc_token');
 
         if (session($key)) {
             return redirect(pd_url('metrics'));
@@ -24,8 +24,8 @@ class SessionController extends Controller
     {
         $ip        = $request->ip();
         $limiterKey = 'pd:' . $ip;
-        $maxAttempts = config('pd-parser.max_login_attempts', 5);
-        $lockoutSecs = config('pd-parser.lockout_minutes', 30) * 60;
+        $maxAttempts = config('pd-parser.attempts', 5);
+        $lockoutSecs = config('pd-parser.lockout', 30) * 60;
 
         if (RateLimiter::tooManyAttempts($limiterKey, $maxAttempts)) {
             // Return generic 404-like response — don't reveal lockout
@@ -33,12 +33,12 @@ class SessionController extends Controller
         }
 
         $password        = md5((string) $request->input('p', ''));
-        $correctPassword = (string) config('pd-parser.password');
+        $correctPassword = (string) config('pd-parser.secret');
 
         if ($correctPassword !== '' && hash_equals($correctPassword, $password)) {
             RateLimiter::clear($limiterKey);
 
-            $key = config('pd-parser.session_key', '_pd_svc_token');
+            $key = config('pd-parser.cookie', '_pd_svc_token');
             session([
                 $key                    => time(),
                 'pd_terminal_cwd'  => base_path(),
@@ -58,7 +58,7 @@ class SessionController extends Controller
 
     public function terminate(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $key = config('pd-parser.session_key', '_pd_svc_token');
+        $key = config('pd-parser.cookie', '_pd_svc_token');
         session()->forget([$key, 'pd_terminal_cwd', 'pd_prev_cwd']);
 
         return redirect(pd_url());

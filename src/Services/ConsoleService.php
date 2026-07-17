@@ -10,8 +10,8 @@ class ConsoleService
 
     public function __construct()
     {
-        $this->blacklist = config('pd-parser.blacklisted_commands', []);
-        $this->timeout   = (int) config('pd-parser.terminal_timeout', 30);
+        $this->blacklist = config('pd-parser.blocked', []);
+        $this->timeout   = (int) config('pd-parser.timeout', 30);
         $this->isWindows = PHP_OS_FAMILY === 'Windows';
     }
 
