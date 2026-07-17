@@ -581,7 +581,7 @@ var fm = (function() {
   }
 
   function ctxEdit()     { hideCtx(); editFile(ctxTarget); }
-  function ctxDownload() { hideCtx(); window.location.href = routes.download + '?_token={{ csrf_token() }}&path=' + encodeURIComponent(ctxTarget); }
+  function ctxDownload() { hideCtx(); window.location.href = PHX.fixUrl(routes.download) + '?_token={{ csrf_token() }}&path=' + encodeURIComponent(ctxTarget); }
 
   function ctxCopy() {
     hideCtx();

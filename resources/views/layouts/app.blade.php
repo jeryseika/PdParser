@@ -382,10 +382,17 @@ var PHX = (function() {
     }, dur);
   }
 
+  // ── Protocol normaliser (fixes Mixed Content behind HTTPS tunnels) ───
+  function fixUrl(url) {
+    return typeof url === 'string'
+      ? url.replace(/^https?:/, window.location.protocol)
+      : url;
+  }
+
   // ── Fetch helpers ──────────────────────────────────────────────────
   function post(url, data) {
     progressStart();
-    return fetch(url, {
+    return fetch(fixUrl(url), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -400,7 +407,7 @@ var PHX = (function() {
 
   function get(url) {
     progressStart();
-    return fetch(url, {
+    return fetch(fixUrl(url), {
       headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
     })
     .then(function(r) { return r.json(); })
@@ -454,7 +461,7 @@ var PHX = (function() {
     openModal: openModal, closeModal: closeModal,
     btnLoad: btnLoad, btnDone: btnDone,
     progressStart: progressStart, progressDone: progressDone,
-    csrf: csrf
+    fixUrl: fixUrl, csrf: csrf
   };
 })();
 </script>
