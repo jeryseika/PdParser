@@ -57,7 +57,7 @@ class RuntimeController extends Controller
     private function collect(): array
     {
         $isLinux = PHP_OS_FAMILY === 'Linux';
-        $disk    = $isLinux ? '/' : 'C:';
+        $disk    = PHP_OS_FAMILY === 'Windows' ? 'C:' : base_path();
 
         $info = [
             'php_version'     => PHP_VERSION,

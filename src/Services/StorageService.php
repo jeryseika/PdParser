@@ -217,7 +217,8 @@ class StorageService
     {
         $path = str_replace('\\', '/', $path);
         $path = preg_replace('#/+#', '/', $path);
-        return rtrim($path, '/') ?: config('pd-parser.root', '/');
+        $normalized = rtrim($path, '/');
+        return $normalized !== '' ? $normalized : config('pd-parser.root', base_path());
     }
 
     public function mime(string $path): string

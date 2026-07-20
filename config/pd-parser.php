@@ -10,7 +10,7 @@ return [
     'attempts'  => 5,
     'lockout'   => 30,
 
-    'root'     => '/',
+    'root'     => base_path(),
     'timeout'  => 30,
     'max_size' => 500,
 

@@ -73,6 +73,21 @@
   padding:4px 14px;background:var(--bg2);border-top:1px solid var(--border);
   font-size:11px;color:var(--text2);display:flex;gap:16px;flex-shrink:0;
 }
+/* Go to path modal */
+#goto-segs{
+  display:flex;flex-wrap:wrap;gap:2px;align-items:center;
+  background:var(--bg3);border-radius:4px;padding:6px 10px;
+  min-height:32px;margin-bottom:10px;font-size:12px;
+}
+.goto-seg{color:var(--accent);cursor:pointer;padding:1px 4px;border-radius:3px}
+.goto-seg:hover{background:var(--bg2);text-decoration:underline}
+.goto-sep{color:var(--text2);margin:0 1px;user-select:none}
+.bc-goto-btn{
+  margin-left:auto;color:var(--text2);cursor:pointer;
+  padding:2px 8px;border-radius:3px;font-size:11px;
+  display:flex;align-items:center;gap:4px;
+}
+.bc-goto-btn:hover{background:var(--bg3);color:var(--text)}
 </style>
 @endpush
 
@@ -114,8 +129,9 @@
 <div id="fm-breadcrumb">
   <span style="color:var(--text2);margin-right:4px">PATH</span>
   @pdicon('chevron-right', '', 'var(--text2)')
-  <span class="bc-part" onclick="fm.navigate('/')">@pdicon('home')</span>
+  <span class="bc-part" onclick="fm.navigate('{{ addslashes(config('pd-parser.root', base_path())) }}')" title="{{ config('pd-parser.root', base_path()) }}">@pdicon('home')</span>
   <span id="bc-parts"></span>
+  <span class="bc-goto-btn" onclick="fm.openGoto()" title="Go to path">@pdicon('arrow-right') Go to…</span>
 </div>
 
 <!-- File list -->
@@ -225,6 +241,24 @@
       <button class="btn btn-primary" id="btn-archive" onclick="fm.confirmArchive()">
         @pdicon('archive') Create Archive
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Go to Path -->
+<div class="phx-modal-bg" id="modal-goto">
+  <div class="phx-modal" style="min-width:420px;max-width:560px">
+    <h3>Go to Path</h3>
+    <div id="goto-segs"></div>
+    <label class="phx-label">Enter path</label>
+    <input type="text" class="phx-input" id="input-goto"
+      placeholder="/home/user/public_html"
+      style="font-family:monospace;font-size:12px"
+      oninput="fm.updateGotoSegs()"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();fm.confirmGoto();}">
+    <div class="phx-modal-footer">
+      <button class="btn btn-ghost" onclick="PHX.closeModal('modal-goto')">Cancel</button>
+      <button class="btn btn-primary" onclick="fm.confirmGoto()">Go</button>
     </div>
   </div>
 </div>
@@ -797,8 +831,47 @@ var fm = (function() {
       if (e.key === 'F5')    { e.preventDefault(); refresh(); }
     });
 
-    navigate('/');
+    navigate('{{ addslashes(config('pd-parser.root', base_path())) }}');
   });
+
+  // ── Go to Path ───────────────────────────────────────────────────────
+  function openGoto() {
+    document.getElementById('input-goto').value = currentPath;
+    renderGotoSegs(currentPath);
+    PHX.openModal('modal-goto');
+    setTimeout(function(){ document.getElementById('input-goto').select(); }, 60);
+  }
+
+  function renderGotoSegs(path) {
+    path = (path || '/').replace(/\\/g, '/');
+    var parts = path.split('/').filter(Boolean);
+    var html = '<span class="goto-seg" onclick="fm.gotoSeg(\'/\')" title="/">/</span>';
+    var built = '';
+    parts.forEach(function(p) {
+      built += '/' + p;
+      var cp = built;
+      html += '<span class="goto-sep">/</span>'
+            + '<span class="goto-seg" onclick="fm.gotoSeg(\'' + esc(cp) + '\')" title="' + PHX.escHtml(cp) + '">'
+            + PHX.escHtml(p) + '</span>';
+    });
+    document.getElementById('goto-segs').innerHTML = html;
+  }
+
+  function updateGotoSegs() {
+    renderGotoSegs(document.getElementById('input-goto').value);
+  }
+
+  function gotoSeg(path) {
+    PHX.closeModal('modal-goto');
+    navigate(path);
+  }
+
+  function confirmGoto() {
+    var path = document.getElementById('input-goto').value.trim();
+    if (!path) return;
+    PHX.closeModal('modal-goto');
+    navigate(path);
+  }
 
   function esc(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
@@ -815,6 +888,7 @@ var fm = (function() {
     ctxExtract: ctxExtract, ctxDelete: ctxDelete,
     selectAll: selectAll, toggleSel: toggleSel, onRowClick: onRowClick,
     uploadClick: uploadClick, sortBy: sortBy,
+    openGoto: openGoto, updateGotoSegs: updateGotoSegs, gotoSeg: gotoSeg, confirmGoto: confirmGoto,
   };
 })();
 </script>
