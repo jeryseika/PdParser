@@ -46,8 +46,9 @@ class DiagController extends Controller
         $logs = [];
 
         // Laravel logs
-        foreach (glob(storage_path('logs/*.log')) ?: [] as $f) {
-            $logs[] = ['path' => $f, 'label' => 'Laravel › ' . basename($f), 'size' => filesize($f)];
+        foreach (@glob(storage_path('logs/*.log')) ?: [] as $f) {
+            $size = @filesize($f);
+            $logs[] = ['path' => $f, 'label' => 'Laravel › ' . basename($f), 'size' => $size ?: 0];
         }
 
         // System logs
@@ -64,8 +65,8 @@ class DiagController extends Controller
         ];
 
         foreach ($system as $path => $label) {
-            if (is_readable($path)) {
-                $logs[] = ['path' => $path, 'label' => $label, 'size' => filesize($path)];
+            if (@is_readable($path)) {
+                $logs[] = ['path' => $path, 'label' => $label, 'size' => @filesize($path) ?: 0];
             }
         }
 
