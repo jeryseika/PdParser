@@ -8,6 +8,9 @@ class PackService
 
     public function createZip(string $destination, array $sources): void
     {
+        // Use OS-native separators — libzip's rename() is unreliable with forward slashes on Windows
+        $destination = $this->nativePath($destination);
+
         $zip    = new \ZipArchive();
         $result = $zip->open($destination, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
@@ -16,7 +19,7 @@ class PackService
         }
 
         foreach ($sources as $source) {
-            $source = str_replace('\\', '/', $source);
+            $source = $this->nativePath($source);
             if (is_file($source)) {
                 $zip->addFile($source, basename($source));
             } elseif (is_dir($source)) {
@@ -24,7 +27,14 @@ class PackService
             }
         }
 
-        $zip->close();
+        if ($zip->close() === false) {
+            throw new \RuntimeException("Failed to write zip file: {$destination}");
+        }
+    }
+
+    private function nativePath(string $path): string
+    {
+        return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     }
 
     private function addDirToZip(\ZipArchive $zip, string $dir, string $prefix): void
@@ -34,7 +44,7 @@ class PackService
 
         foreach ($entries as $e) {
             if ($e === '.' || $e === '..') continue;
-            $full    = $dir . '/' . $e;
+            $full    = $this->nativePath($dir . '/' . $e);
             $zipPath = $prefix . '/' . $e;
             if (is_dir($full)) {
                 $this->addDirToZip($zip, $full, $zipPath);
