@@ -13,9 +13,9 @@ class MetricsController extends Controller
 
     private function stats(): array
     {
-        $isLinux = PHP_OS_FAMILY === 'Linux';
-
+        $isLinux  = PHP_OS_FAMILY === 'Linux';
         $hostname = gethostname() ?: 'unknown';
+        $disk     = $this->diskPath();
 
         $s = [
             'php_version'      => PHP_VERSION,
@@ -25,8 +25,8 @@ class MetricsController extends Controller
             'server_ip'        => $_SERVER['SERVER_ADDR'] ?? (@gethostbyname($hostname) ?: 'N/A'),
             'server_software'  => $_SERVER['SERVER_SOFTWARE'] ?? 'CLI',
             'document_root'    => $_SERVER['DOCUMENT_ROOT'] ?? base_path(),
-            'disk_total'       => disk_total_space($isLinux ? '/' : 'C:') ?: 0,
-            'disk_free'        => disk_free_space($isLinux ? '/' : 'C:') ?: 0,
+            'disk_total'       => (int) (@disk_total_space($disk) ?: 0),
+            'disk_free'        => (int) (@disk_free_space($disk) ?: 0),
             'memory_limit'     => ini_get('memory_limit'),
             'memory_usage'     => memory_get_usage(true),
             'laravel_version'  => app()->version(),
@@ -61,5 +61,28 @@ class MetricsController extends Controller
         }
 
         return $s;
+    }
+
+    private function diskPath(): string
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return preg_match('/^([A-Za-z]:)/', base_path(), $m) ? $m[1] : 'C:';
+        }
+
+        $candidates = [base_path(), sys_get_temp_dir()];
+
+        $openBasedir = ini_get('open_basedir');
+        if ($openBasedir) {
+            foreach (explode(':', $openBasedir) as $p) {
+                $p = trim($p);
+                if ($p && $p !== '.') $candidates[] = $p;
+            }
+        }
+
+        foreach ($candidates as $path) {
+            if (@is_dir($path)) return $path;
+        }
+
+        return '/';
     }
 }
