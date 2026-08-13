@@ -218,6 +218,10 @@ class StorageService
         $path = str_replace('\\', '/', $path);
         $path = preg_replace('#/+#', '/', $path);
         $normalized = rtrim($path, '/');
+        // Preserve Windows drive root: 'D:' alone refers to CWD, not root — keep the slash
+        if (preg_match('/^[A-Za-z]:$/', $normalized)) {
+            $normalized .= '/';
+        }
         return $normalized !== '' ? $normalized : config('pd-parser.root', base_path());
     }
 

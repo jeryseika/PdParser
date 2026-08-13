@@ -23,7 +23,7 @@ class PackController extends Controller
             };
 
             return response()->json(['success' => true, 'destination' => $dest]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
     }

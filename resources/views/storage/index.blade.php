@@ -383,7 +383,7 @@ var fm = (function() {
 
   // ── Navigate ─────────────────────────────────────────────────────────
   function navigate(path) {
-    currentPath = path || '/';
+    currentPath = (path || '/').replace(/\\/g, '/');
     selected.clear();
     document.getElementById('fm-check-all').checked = false;
     load();
@@ -401,15 +401,31 @@ var fm = (function() {
     }).catch(function() { hideOverlay(); PHX.toast('Network error', 'error'); });
   }
 
+  // Returns [{label, path}] aware of Windows drive roots (D:/) vs Unix (/)
+  function buildBreadcrumbParts(path) {
+    var isWin  = /^[A-Za-z]:/.test(path);
+    var parts  = path.split('/').filter(Boolean);
+    var result = [];
+    var acc    = isWin ? '' : '/';
+    parts.forEach(function(p, i) {
+      if (isWin && i === 0) {
+        acc = p + '/';            // 'D:/'
+      } else if (acc === '/') {
+        acc = '/' + p;            // '/home'
+      } else {
+        acc = acc.replace(/\/$/, '') + '/' + p;
+      }
+      result.push({ label: p, path: acc });
+    });
+    return { isWin: isWin, parts: result };
+  }
+
   function renderBreadcrumb(path) {
-    var parts = path.split('/').filter(Boolean);
+    var bc   = buildBreadcrumbParts(path);
     var html = '';
-    var built = '';
-    parts.forEach(function(p) {
-      built += '/' + p;
-      var cp = built;
+    bc.parts.forEach(function(seg) {
       html += '<span class="bc-sep" style="color:var(--text2);margin:0 2px">/</span>'
-            + '<span class="bc-part" onclick="fm.navigate(\'' + esc(cp) + '\')">' + PHX.escHtml(p) + '</span>';
+            + '<span class="bc-part" onclick="fm.navigate(\'' + esc(seg.path) + '\')">' + PHX.escHtml(seg.label) + '</span>';
     });
     document.getElementById('bc-parts').innerHTML = html;
   }
@@ -426,8 +442,11 @@ var fm = (function() {
     });
 
     var html = '';
-    if (currentPath !== '/') {
-      var parent = currentPath.split('/').slice(0,-1).join('/') || '/';
+    var _isWinRoot = /^[A-Za-z]:\/?$/.test(currentPath);
+    if (currentPath !== '/' && !_isWinRoot) {
+      var _segs = currentPath.split('/'); _segs.pop();
+      var parent = _segs.join('/') || '/';
+      if (/^[A-Za-z]:$/.test(parent)) parent += '/';
       html += '<tr><td></td><td colspan="6">'
             + '<div class="fm-cell-name">' + phxIcon('folder','','#d29922') + '<span class="fm-name dir" onclick="fm.navigate(\'' + esc(parent) + '\')">..</span></div>'
             + '</td></tr>';
@@ -507,7 +526,10 @@ var fm = (function() {
 
   // ── Directory operations ──────────────────────────────────────────────
   function goUp() {
-    var parent = currentPath.split('/').slice(0,-1).join('/') || '/';
+    if (/^[A-Za-z]:\/?$/.test(currentPath)) return;
+    var segs = currentPath.split('/'); segs.pop();
+    var parent = segs.join('/') || '/';
+    if (/^[A-Za-z]:$/.test(parent)) parent += '/';
     navigate(parent);
   }
 
@@ -843,16 +865,12 @@ var fm = (function() {
   }
 
   function renderGotoSegs(path) {
-    path = (path || '/').replace(/\\/g, '/');
-    var parts = path.split('/').filter(Boolean);
-    var html = '<span class="goto-seg" onclick="fm.gotoSeg(\'/\')" title="/">/</span>';
-    var built = '';
-    parts.forEach(function(p) {
-      built += '/' + p;
-      var cp = built;
-      html += '<span class="goto-sep">/</span>'
-            + '<span class="goto-seg" onclick="fm.gotoSeg(\'' + esc(cp) + '\')" title="' + PHX.escHtml(cp) + '">'
-            + PHX.escHtml(p) + '</span>';
+    var bc   = buildBreadcrumbParts((path || '/').replace(/\\/g, '/'));
+    var html = bc.isWin ? '' : '<span class="goto-seg" onclick="fm.gotoSeg(\'/\')" title="/">/</span>';
+    bc.parts.forEach(function(seg, idx) {
+      if (html || idx > 0) html += '<span class="goto-sep">/</span>';
+      html += '<span class="goto-seg" onclick="fm.gotoSeg(\'' + esc(seg.path) + '\')" title="' + PHX.escHtml(seg.path) + '">'
+            + PHX.escHtml(seg.label) + '</span>';
     });
     document.getElementById('goto-segs').innerHTML = html;
   }
